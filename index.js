@@ -35,7 +35,7 @@ app.get("/institutes", async (req,res) =>{
         await connectToDatabase()
         const result = await instituteCollection.findOne({});
         console.log(result);
-        res.send({success : "Institutes sent Successfully"})
+        res.send({success : "Institutes sent Successfully",result})
     }
     catch(Err){
         res.send({failure : `Error Occurred : ${Err}`})
