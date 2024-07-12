@@ -102,6 +102,7 @@ app.get("/institutes/:id", async (req, res) => {
 // Endpoint to add a new institute
 app.post("/institutes", async (req, res) => {
   try {
+    console.log("I am institute post method");
     const newInstitute = req.body;
     const result = await instituteCollection.insertOne(newInstitute);
     res.send({ success: "Institute added successfully", result });
