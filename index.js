@@ -190,12 +190,10 @@ app.delete("/form/:id", async (req, res) => {
   }
 });
 
-// Import necessary modules and initialize Express app, MongoDB client, etc.
-
 // Endpoint to fetch all marketing entries
 app.get("/marketing", async (req, res) => {
   try {
-    const result = await marketingCollection.find({}).toArray();
+    const result = await marketingCampaignsCollection.find({}).toArray();
     res.status(200).send({ success: "Marketing entries fetched successfully", result });
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
@@ -206,7 +204,7 @@ app.get("/marketing", async (req, res) => {
 app.get("/marketing/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const marketing = await marketingCollection.findOne({ _id: new ObjectId(id) });
+    const marketing = await marketingCampaignsCollection.findOne({ _id: new ObjectId(id) });
     if (marketing) {
       res.status(200).send({ success: "Marketing entry fetched successfully", result: marketing });
     } else {
@@ -221,7 +219,7 @@ app.get("/marketing/:id", async (req, res) => {
 app.post("/marketing", async (req, res) => {
   try {
     const newMarketing = req.body;
-    const result = await marketingCollection.insertOne(newMarketing);
+    const result = await marketingCampaignsCollection.insertOne(newMarketing);
     res.status(201).send({ success: "Marketing entry added successfully", result });
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
@@ -233,7 +231,7 @@ app.put("/marketing/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const updatedMarketing = req.body;
-    const result = await marketingCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedMarketing });
+    const result = await marketingCampaignsCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedMarketing });
     if (result.matchedCount === 1) {
       res.status(200).send({ success: "Marketing entry updated successfully" });
     } else {
@@ -248,7 +246,7 @@ app.put("/marketing/:id", async (req, res) => {
 app.delete("/marketing/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await marketingCollection.deleteOne({ _id: new ObjectId(id) });
+    const result = await marketingCampaignsCollection.deleteOne({ _id: new ObjectId(id) });
     if (result.deletedCount === 1) {
       res.status(200).send({ success: "Marketing entry deleted successfully" });
     } else {
@@ -258,7 +256,6 @@ app.delete("/marketing/:id", async (req, res) => {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
-
 
 
 const PORT = process.env.PORT || 3001;
