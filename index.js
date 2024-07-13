@@ -61,9 +61,9 @@ app.post("/upload", upload, (req, res) => {
 
   s3.upload(params, (error, data) => {
     if (error) {
-      res.status(500).send({ Error: error });
+      return res.status(500).send({ failure: error.message });
     }
-    res.status(200).send(data);
+    res.status(200).send({ success: "File uploaded successfully", data });
   });
 });
 // AWS S3 File Upload Code Snippet Ends
@@ -76,9 +76,9 @@ app.get("/", (req, res) => {
 app.get("/institutes", async (req, res) => {
   try {
     const result = await instituteCollection.find({}).toArray();
-    res.send({ success: "Institutes sent successfully", result });
+    res.status(200).send({ success: "Institutes fetched successfully", result });
   } catch (err) {
-    res.send({ failure: `Error occurred: ${err}` });
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
@@ -88,24 +88,23 @@ app.get("/institutes/:id", async (req, res) => {
   try {
     const institute = await instituteCollection.findOne({ _id: new ObjectId(id) });
     if (institute) {
-      res.send({ success: "Institute fetched successfully", result: institute });
+      res.status(200).send({ success: "Institute fetched successfully", result: institute });
     } else {
-      res.send({ failure: "Institute not found" });
+      res.status(404).send({ failure: "Institute not found" });
     }
   } catch (err) {
-    res.send({ failure: `Error occurred: ${err}` });
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
 // Endpoint to add a new institute
 app.post("/institutes", async (req, res) => {
   try {
-    console.log("I am institute post method");
     const newInstitute = req.body;
     const result = await instituteCollection.insertOne(newInstitute);
-    res.send({ success: "Institute added successfully", result });
+    res.status(201).send({ success: "Institute added successfully", result });
   } catch (err) {
-    res.send({ failure: `Error occurred: ${err}` });
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
@@ -113,9 +112,9 @@ app.post("/institutes", async (req, res) => {
 app.get("/audioclips", async (req, res) => {
   try {
     const result = await audioclipsCollection.find({}).toArray();
-    res.send({ success: "Audio clips sent successfully", result });
+    res.status(200).send({ success: "Audio clips fetched successfully", result });
   } catch (err) {
-    res.send({ failure: `Error occurred: ${err}` });
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
@@ -124,9 +123,9 @@ app.post("/audioclips", async (req, res) => {
   try {
     const newClip = req.body;
     const result = await audioclipsCollection.insertOne(newClip);
-    res.send({ success: "Audio clip added successfully", result });
+    res.status(201).send({ success: "Audio clip added successfully", result });
   } catch (err) {
-    res.send({ failure: `Error occurred: ${err}` });
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
@@ -136,9 +135,9 @@ app.post("/form", async (req, res) => {
     const { name, mobile, course } = req.body;
     const newSubmission = { name, mobile, course, date: new Date() };
     const result = await formSubmissionsCollection.insertOne(newSubmission);
-    res.send({ success: "Form submitted successfully", result });
+    res.status(201).send({ success: "Form submitted successfully", result });
   } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err}` });
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
