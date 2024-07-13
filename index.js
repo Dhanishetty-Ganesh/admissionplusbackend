@@ -12,25 +12,27 @@ app.use(cors());
 dotenv.config();
 
 const uri = process.env.mongo_uri;
-const client = new MongoClient(uri);
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const dbname = "Institutelist";
 const instituteCollectionName = "Institutes";
-const audioclipsCollectionName = "audioclips"; // New collection
-const formSubmissionsCollectionName = "studentsdbformSubmissions"; // New collection for form submissions
+const audioclipsCollectionName = "audioclips";
+const formSubmissionsCollectionName = "studentsdbformSubmissions";
 let instituteCollection;
-let audioclipsCollection; // New collection variable
-let formSubmissionsCollection; // New collection variable for form submissions
+let audioclipsCollection;
+let formSubmissionsCollection;
 
 const connectToDatabase = async () => {
   try {
     await client.connect();
     console.log(`Connected to the ${dbname} database`);
-    instituteCollection = client.db(dbname).collection(instituteCollectionName);
-    audioclipsCollection = client.db(dbname).collection(audioclipsCollectionName); // Initialize audioclips collection
-    formSubmissionsCollection = client.db(dbname).collection(formSubmissionsCollectionName); // Initialize form submissions collection
+    const db = client.db(dbname);
+    instituteCollection = db.collection(instituteCollectionName);
+    audioclipsCollection = db.collection(audioclipsCollectionName);
+    formSubmissionsCollection = db.collection(formSubmissionsCollectionName);
   } catch (err) {
     console.error(`Error connecting to the database: ${err}`);
+    process.exit(1); // Exit process on database connection error
   }
 };
 
@@ -75,6 +77,9 @@ app.get("/", (req, res) => {
 // Endpoint to fetch all institutes
 app.get("/institutes", async (req, res) => {
   try {
+    if (!instituteCollection) {
+      throw new Error("Institute collection is not initialized");
+    }
     const result = await instituteCollection.find({}).toArray();
     res.status(200).send({ success: "Institutes fetched successfully", result });
   } catch (err) {
@@ -181,6 +186,7 @@ app.delete("/form/:id", async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
-  console.log("Server is running at http://localhost:3001");
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
