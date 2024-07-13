@@ -19,10 +19,13 @@ const instituteCollectionName = "Institutes";
 const audioclipsCollectionName = "audioclips";
 const formSubmissionsCollectionName = "studentsdbformSubmissions";
 const marketingCampaignsCollectionName = "marketingcampaigns";
+const marketingDataCollectionName = "marketingdata";
 let instituteCollection;
 let audioclipsCollection;
 let formSubmissionsCollection;
 let marketingCampaignsCollection;
+let marketingDataCollection; 
+
 
 const connectToDatabase = async () => {
   try {
@@ -33,6 +36,7 @@ const connectToDatabase = async () => {
     audioclipsCollection = db.collection(audioclipsCollectionName);
     formSubmissionsCollection = db.collection(formSubmissionsCollectionName);
     marketingCampaignsCollection = db.collection(marketingCampaignsCollectionName); // Add this line
+    marketingDataCollection = db.collection(marketingDataCollectionName);
   } catch (err) {
     console.error(`Error connecting to the database: ${err}`);
     process.exit(1); // Exit process on database connection error
@@ -256,6 +260,74 @@ app.delete("/marketing/:id", async (req, res) => {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
+
+// Endpoint to fetch all marketing data entries
+app.get("/marketingdata", async (req, res) => {
+  try {
+    const result = await marketingDataCollection.find({}).toArray();
+    res.status(200).send({ success: "Marketing data entries fetched successfully", result });
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to fetch a single marketing data entry by ID
+app.get("/marketingdata/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const marketingData = await marketingDataCollection.findOne({ _id: new ObjectId(id) });
+    if (marketingData) {
+      res.status(200).send({ success: "Marketing data entry fetched successfully", result: marketingData });
+    } else {
+      res.status(404).send({ failure: "Marketing data entry not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to add a new marketing data entry
+app.post("/marketingdata", async (req, res) => {
+  try {
+    const newMarketingData = req.body;
+    const result = await marketingDataCollection.insertOne(newMarketingData);
+    res.status(201).send({ success: "Marketing data entry added successfully", result });
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to update an existing marketing data entry by ID
+app.put("/marketingdata/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatedMarketingData = req.body;
+    const result = await marketingDataCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedMarketingData });
+    if (result.matchedCount === 1) {
+      res.status(200).send({ success: "Marketing data entry updated successfully" });
+    } else {
+      res.status(404).send({ failure: "Marketing data entry not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to delete a marketing data entry by ID
+app.delete("/marketingdata/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await marketingDataCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 1) {
+      res.status(200).send({ success: "Marketing data entry deleted successfully" });
+    } else {
+      res.status(404).send({ failure: "Marketing data entry not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
 
 
 const PORT = process.env.PORT || 3001;
