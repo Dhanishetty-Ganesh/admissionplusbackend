@@ -17,7 +17,7 @@ const client = new MongoClient(uri);
 const dbname = "Institutelist";
 const instituteCollectionName = "Institutes";
 const audioclipsCollectionName = "audioclips"; // New collection
-const formSubmissionsCollectionName = "formSubmissions"; // New collection for form submissions
+const formSubmissionsCollectionName = "studentsdbformSubmissions"; // New collection for form submissions
 let instituteCollection;
 let audioclipsCollection; // New collection variable
 let formSubmissionsCollection; // New collection variable for form submissions
@@ -132,10 +132,50 @@ app.post("/audioclips", async (req, res) => {
 // Endpoint to handle form submissions
 app.post("/form", async (req, res) => {
   try {
-    const { name, mobile, course } = req.body;
-    const newSubmission = { name, mobile, course, date: new Date() };
+    const { date, name, mobile, email, course } = req.body;
+    const newSubmission = { date, name, mobile, email, course, submittedAt: new Date() };
     const result = await formSubmissionsCollection.insertOne(newSubmission);
     res.status(201).send({ success: "Form submitted successfully", result });
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to fetch all form submissions
+app.get("/form", async (req, res) => {
+  try {
+    const result = await formSubmissionsCollection.find({}).toArray();
+    res.status(200).send({ success: "Form submissions fetched successfully", result });
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to fetch a single form submission by ID
+app.get("/form/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const submission = await formSubmissionsCollection.findOne({ _id: new ObjectId(id) });
+    if (submission) {
+      res.status(200).send({ success: "Form submission fetched successfully", result: submission });
+    } else {
+      res.status(404).send({ failure: "Form submission not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to delete a form submission by ID
+app.delete("/form/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await formSubmissionsCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 1) {
+      res.status(200).send({ success: "Form submission deleted successfully" });
+    } else {
+      res.status(404).send({ failure: "Form submission not found" });
+    }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
