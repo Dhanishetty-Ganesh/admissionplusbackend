@@ -121,66 +121,62 @@ app.post("/institutes", async (req, res) => {
   }
 });
 
-app.get("/audioclips", async (req, res) => {
+app.get('/audioclips', async (req, res) => {
   try {
     const result = await audioclipsCollection.find({}).toArray();
-    res.status(200).send({ success: "Audio clips fetched successfully", result });
+    res.status(200).send({ success: 'Audio clips fetched successfully', result });
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
-// Endpoint to add a new audioclip
-app.post("/audioclips", async (req, res) => {
+app.post('/audioclips', async (req, res) => {
   try {
     const newClip = req.body;
     const result = await audioclipsCollection.insertOne(newClip);
-    res.status(201).send({ success: "Audio clip added successfully", result });
+    res.status(201).send({ success: 'Audio clip added successfully', result });
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
-// Endpoint to fetch a single audioclip by ID
-app.get("/audioclips/:id", async (req, res) => {
+app.get('/audioclips/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const clip = await audioclipsCollection.findOne({ _id: new ObjectId(id) });
     if (clip) {
-      res.status(200).send({ success: "Audio clip fetched successfully", result: clip });
+      res.status(200).send({ success: 'Audio clip fetched successfully', result: clip });
     } else {
-      res.status(404).send({ failure: "Audio clip not found" });
+      res.status(404).send({ failure: 'Audio clip not found' });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
-// Endpoint to update an existing audioclip by ID
-app.put("/audioclips/:id", async (req, res) => {
+app.put('/audioclips/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const updatedClip = req.body;
     const result = await audioclipsCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedClip });
     if (result.matchedCount === 1) {
-      res.status(200).send({ success: "Audio clip updated successfully" });
+      res.status(200).send({ success: 'Audio clip updated successfully' });
     } else {
-      res.status(404).send({ failure: "Audio clip not found" });
+      res.status(404).send({ failure: 'Audio clip not found' });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
-// Endpoint to delete an audioclip by ID
-app.delete("/audioclips/:id", async (req, res) => {
+app.delete('/audioclips/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const result = await audioclipsCollection.deleteOne({ _id: new ObjectId(id) });
     if (result.deletedCount === 1) {
-      res.status(200).send({ success: "Audio clip deleted successfully" });
+      res.status(200).send({ success: 'Audio clip deleted successfully' });
     } else {
-      res.status(404).send({ failure: "Audio clip not found" });
+      res.status(404).send({ failure: 'Audio clip not found' });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
