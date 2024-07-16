@@ -127,6 +127,38 @@ app.post("/institutes", async (req, res) => {
   }
 });
 
+app.put("/institutes/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatedInstitute = req.body;
+    const result = await instituteCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedInstitute });
+    if (result.matchedCount === 1) {
+      res.status(200).send({ success: "Institute updated successfully" });
+    } else {
+      res.status(404).send({ failure: "Institute not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to delete an institute by ID
+app.delete("/institutes/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await instituteCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 1) {
+      res.status(200).send({ success: "Institute deleted successfully" });
+    } else {
+      res.status(404).send({ failure: "Institute not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+
+
 app.get('/audioclips', async (req, res) => {
   try {
     const result = await audioclipsCollection.find({}).toArray();
