@@ -20,6 +20,8 @@ const audioclipsCollectionName = "audioclips";
 const formSubmissionsCollectionName = "studentsdbformSubmissions";
 const marketingCampaignsCollectionName = "marketingcampaigns";
 const marketingDataCollectionName = "marketingdata";
+const studentsgroupsCollectionName = "groups";
+let studentsgroupsCollection;
 let instituteCollection;
 let audioclipsCollection;
 let formSubmissionsCollection;
@@ -37,6 +39,7 @@ const connectToDatabase = async () => {
     formSubmissionsCollection = db.collection(formSubmissionsCollectionName);
     marketingCampaignsCollection = db.collection(marketingCampaignsCollectionName); // Add this line
     marketingDataCollection = db.collection(marketingDataCollectionName);
+    studentsgroupsCollection = db.collection(studentsgroupsCollectionName); 
   } catch (err) {
     console.error(`Error connecting to the database: ${err}`);
     process.exit(1); // Exit process on database connection error
@@ -363,6 +366,73 @@ app.delete("/marketingdata/:id", async (req, res) => {
       res.status(200).send({ success: "Marketing data entry deleted successfully" });
     } else {
       res.status(404).send({ failure: "Marketing data entry not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+
+app.get("/groups", async (req, res) => {
+  try {
+    const result = await groupsCollection.find({}).toArray();
+    res.status(200).send({ success: "Groups fetched successfully", result });
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to fetch a single group by ID
+app.get("/groups/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const group = await groupsCollection.findOne({ _id: new ObjectId(id) });
+    if (group) {
+      res.status(200).send({ success: "Group fetched successfully", result: group });
+    } else {
+      res.status(404).send({ failure: "Group not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to add a new group
+app.post("/groups", async (req, res) => {
+  try {
+    const group = req.body;
+    const result = await groupsCollection.insertOne(group);
+    res.status(201).send({ success: "Group added successfully", result });
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to update a group by ID
+app.put("/groups/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const group = req.body;
+    const result = await groupsCollection.updateOne({ _id: new ObjectId(id) }, { $set: group });
+    if (result.modifiedCount > 0) {
+      res.status(200).send({ success: "Group updated successfully" });
+    } else {
+      res.status(404).send({ failure: "Group not found or no changes made" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+// Endpoint to delete a group by ID
+app.delete("/groups/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await groupsCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount > 0) {
+      res.status(200).send({ success: "Group deleted successfully" });
+    } else {
+      res.status(404).send({ failure: "Group not found" });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
