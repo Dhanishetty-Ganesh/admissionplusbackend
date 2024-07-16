@@ -373,9 +373,10 @@ app.delete("/marketingdata/:id", async (req, res) => {
 });
 
 
+// Endpoint to fetch all groups
 app.get('/groups', async (req, res) => {
   try {
-    const groups = await studentsDatabaseCollection.find({}).toArray();
+    const groups = await studentsgroupsCollection.find({}).toArray();
     res.json({ result: groups });
   } catch (error) {
     console.error('Error fetching groups:', error);
@@ -383,9 +384,11 @@ app.get('/groups', async (req, res) => {
   }
 });
 
+// Endpoint to add a group
 app.post('/groups', async (req, res) => {
   const { groupName, category } = req.body;
 
+  // Validate input
   if (!groupName || !category) {
     return res.status(400).json({ message: 'Group name and category are required' });
   }
@@ -396,60 +399,64 @@ app.post('/groups', async (req, res) => {
       category,
       totalUsers: 0
     };
-    const result = await studentsDatabaseCollection.insertOne(newGroup);
-    res.status(201).json(result);
+    const result = await studentsgroupsCollection.insertOne(newGroup);
+    res.status(201).json(result.ops[0]); // Return the inserted document
   } catch (error) {
     console.error('Error adding group:', error);
-    res.status(500).json({ message: 'Error adding group', error });
+    res.status(500).json({ message: 'Error adding group', error: error.message });
   }
 });
 
+// Endpoint to update a group by ID
 app.put('/groups/:id', async (req, res) => {
   const { id } = req.params;
   const { groupName, category } = req.body;
 
+  // Validate ID
   if (!ObjectId.isValid(id)) {
     return res.status(400).json({ message: 'Invalid group ID' });
   }
 
+  // Validate input
   if (!groupName || !category) {
     return res.status(400).json({ message: 'Group name and category are required' });
   }
 
   try {
-    const result = await studentsDatabaseCollection.updateOne(
+    const result = await studentsgroupsCollection.updateOne(
       { _id: new ObjectId(id) },
       { $set: { groupName, category } }
     );
     if (result.modifiedCount === 0) {
       return res.status(404).json({ message: 'Group not found' });
     }
-    res.json(result);
+    res.json({ success: 'Group updated successfully' });
   } catch (error) {
     console.error('Error updating group:', error);
-    res.status(500).json({ message: 'Error updating group', error });
+    res.status(500).json({ message: 'Error updating group', error: error.message });
   }
 });
 
+// Endpoint to delete a group by ID
 app.delete('/groups/:id', async (req, res) => {
   const { id } = req.params;
 
+  // Validate ID
   if (!ObjectId.isValid(id)) {
     return res.status(400).json({ message: 'Invalid group ID' });
   }
 
   try {
-    const result = await studentsDatabaseCollection.deleteOne({ _id: new ObjectId(id) });
+    const result = await studentsgroupsCollection.deleteOne({ _id: new ObjectId(id) });
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: 'Group not found' });
     }
-    res.json(result);
+    res.json({ success: 'Group deleted successfully' });
   } catch (error) {
     console.error('Error deleting group:', error);
-    res.status(500).json({ message: 'Error deleting group', error });
+    res.status(500).json({ message: 'Error deleting group', error: error.message });
   }
 });
-
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
