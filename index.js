@@ -373,72 +373,82 @@ app.delete("/marketingdata/:id", async (req, res) => {
 });
 
 
-app.get("/groups", async (req, res) => {
+app.get('/groups', async (req, res) => {
   try {
-    const result = await groupsCollection.find({}).toArray();
-    res.status(200).send({ success: "Groups fetched successfully", result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+    const groups = await studentsDatabaseCollection.find({}).toArray();
+    res.json({ result: groups });
+  } catch (error) {
+    console.error('Error fetching groups:', error);
+    res.status(500).json({ message: 'Error fetching groups', error });
   }
 });
 
-// Endpoint to fetch a single group by ID
-app.get("/groups/:id", async (req, res) => {
+app.post('/groups', async (req, res) => {
+  const { groupName, category } = req.body;
+
+  if (!groupName || !category) {
+    return res.status(400).json({ message: 'Group name and category are required' });
+  }
+
+  try {
+    const newGroup = {
+      groupName,
+      category,
+      totalUsers: 0
+    };
+    const result = await studentsDatabaseCollection.insertOne(newGroup);
+    res.status(201).json(result);
+  } catch (error) {
+    console.error('Error adding group:', error);
+    res.status(500).json({ message: 'Error adding group', error });
+  }
+});
+
+app.put('/groups/:id', async (req, res) => {
   const { id } = req.params;
+  const { groupName, category } = req.body;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid group ID' });
+  }
+
+  if (!groupName || !category) {
+    return res.status(400).json({ message: 'Group name and category are required' });
+  }
+
   try {
-    const group = await groupsCollection.findOne({ _id: new ObjectId(id) });
-    if (group) {
-      res.status(200).send({ success: "Group fetched successfully", result: group });
-    } else {
-      res.status(404).send({ failure: "Group not found" });
+    const result = await studentsDatabaseCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { groupName, category } }
+    );
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: 'Group not found' });
     }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+    res.json(result);
+  } catch (error) {
+    console.error('Error updating group:', error);
+    res.status(500).json({ message: 'Error updating group', error });
   }
 });
 
-// Endpoint to add a new group
-app.post("/groups", async (req, res) => {
-  try {
-    const group = req.body;
-    const result = await groupsCollection.insertOne(group);
-    res.status(201).send({ success: "Group added successfully", result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to update a group by ID
-app.put("/groups/:id", async (req, res) => {
+app.delete('/groups/:id', async (req, res) => {
   const { id } = req.params;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid group ID' });
+  }
+
   try {
-    const group = req.body;
-    const result = await groupsCollection.updateOne({ _id: new ObjectId(id) }, { $set: group });
-    if (result.modifiedCount > 0) {
-      res.status(200).send({ success: "Group updated successfully" });
-    } else {
-      res.status(404).send({ failure: "Group not found or no changes made" });
+    const result = await studentsDatabaseCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Group not found' });
     }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+    res.json(result);
+  } catch (error) {
+    console.error('Error deleting group:', error);
+    res.status(500).json({ message: 'Error deleting group', error });
   }
 });
-
-// Endpoint to delete a group by ID
-app.delete("/groups/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await groupsCollection.deleteOne({ _id: new ObjectId(id) });
-    if (result.deletedCount > 0) {
-      res.status(200).send({ success: "Group deleted successfully" });
-    } else {
-      res.status(404).send({ failure: "Group not found" });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
 
 
 const PORT = process.env.PORT || 3001;
