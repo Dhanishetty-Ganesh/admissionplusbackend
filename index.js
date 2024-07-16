@@ -21,6 +21,8 @@ const formSubmissionsCollectionName = "studentsdbformSubmissions";
 const marketingCampaignsCollectionName = "marketingcampaigns";
 const marketingDataCollectionName = "marketingdata";
 const studentsgroupsCollectionName = "groups";
+const studentsdbgroupnameCollectionName = "studentsdbgroupname";
+let studentsdbgroupnameCollection;
 let studentsgroupsCollection;
 let instituteCollection;
 let audioclipsCollection;
@@ -40,6 +42,7 @@ const connectToDatabase = async () => {
     marketingCampaignsCollection = db.collection(marketingCampaignsCollectionName); // Add this line
     marketingDataCollection = db.collection(marketingDataCollectionName);
     studentsgroupsCollection = db.collection(studentsgroupsCollectionName); 
+    studentsdbgroupnameCollection = db.collection(studentsdbgroupnameCollectionName);
   } catch (err) {
     console.error(`Error connecting to the database: ${err}`);
     process.exit(1); // Exit process on database connection error
@@ -457,6 +460,71 @@ app.delete('/groups/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting group', error: error.message });
   }
 });
+
+
+app.get("/studentsdbgroupname", async (req, res) => {
+  try {
+    const result = await studentsdbgroupnameCollection.find({}).toArray();
+    res.status(200).send({ success: "Students fetched successfully", result });
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+app.get("/studentsdbgroupname/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const student = await studentsdbgroupnameCollection.findOne({ _id: new ObjectId(id) });
+    if (student) {
+      res.status(200).send({ success: "Student fetched successfully", result: student });
+    } else {
+      res.status(404).send({ failure: "Student not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+app.post("/studentsdbgroupname", async (req, res) => {
+  try {
+    const newStudent = req.body;
+    const result = await studentsdbgroupnameCollection.insertOne(newStudent);
+    res.status(201).send({ success: "Student added successfully", result });
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+app.put("/studentsdbgroupname/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatedStudent = req.body;
+    const result = await studentsdbgroupnameCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedStudent });
+    if (result.matchedCount === 1) {
+      res.status(200).send({ success: "Student updated successfully" });
+    } else {
+      res.status(404).send({ failure: "Student not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+app.delete("/studentsdbgroupname/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await studentsdbgroupnameCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 1) {
+      res.status(200).send({ success: "Student deleted successfully" });
+    } else {
+      res.status(404).send({ failure: "Student not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
+
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
