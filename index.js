@@ -12,11 +12,7 @@ app.use(cors());
 dotenv.config();
 
 const uri = process.env.mongo_uri;
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  poolSize: 10, // Increase pool size for better concurrency
-});
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true,});
 
 const dbname = "Institutelist";
 const instituteCollectionName = "Institutes";
@@ -91,6 +87,11 @@ app.post("/upload", upload, (req, res) => {
 app.get("/", (req, res) => {
   res.send({ success: "Hello World" });
 });
+
+
+const asyncHandler = fn => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
 
 app.get('/institutes', async (req, res) => {
   try {
