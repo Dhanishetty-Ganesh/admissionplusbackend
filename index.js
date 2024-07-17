@@ -16,19 +16,9 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 const dbname = "Institutelist";
 const instituteCollectionName = "Institutes";
-const audioclipsCollectionName = "audioclips";
 const formSubmissionsCollectionName = "studentsdbformSubmissions";
-const marketingCampaignsCollectionName = "marketingcampaigns";
-const marketingDataCollectionName = "marketingdata";
-const studentsgroupsCollectionName = "groups";
-const studentsdbgroupnameCollectionName = "studentsdbgroupname";
-let studentsdbgroupnameCollection;
-let studentsgroupsCollection;
 let instituteCollection;
-let audioclipsCollection;
 let formSubmissionsCollection;
-let marketingCampaignsCollection;
-let marketingDataCollection; 
 
 
 const connectToDatabase = async () => {
@@ -37,12 +27,7 @@ const connectToDatabase = async () => {
     console.log(`Connected to the ${dbname} database`);
     const db = client.db(dbname);
     instituteCollection = db.collection(instituteCollectionName);
-    audioclipsCollection = db.collection(audioclipsCollectionName);
     formSubmissionsCollection = db.collection(formSubmissionsCollectionName);
-    marketingCampaignsCollection = db.collection(marketingCampaignsCollectionName); // Add this line
-    marketingDataCollection = db.collection(marketingDataCollectionName);
-    studentsgroupsCollection = db.collection(studentsgroupsCollectionName); 
-    studentsdbgroupnameCollection = db.collection(studentsdbgroupnameCollectionName);
   } catch (err) {
     console.error(`Error connecting to the database: ${err}`);
     process.exit(1); // Exit process on database connection error
@@ -174,68 +159,6 @@ app.delete('/institutes/:id', async (req, res) => {
 });
 
 
-app.get('/audioclips', async (req, res) => {
-  try {
-    const result = await audioclipsCollection.find({}).toArray();
-    res.status(200).send({ success: 'Audio clips fetched successfully', result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-app.post('/audioclips', async (req, res) => {
-  try {
-    const newClip = req.body;
-    const result = await audioclipsCollection.insertOne(newClip);
-    res.status(201).send({ success: 'Audio clip added successfully', result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-app.get('/audioclips/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const clip = await audioclipsCollection.findOne({ _id: new ObjectId(id) });
-    if (clip) {
-      res.status(200).send({ success: 'Audio clip fetched successfully', result: clip });
-    } else {
-      res.status(404).send({ failure: 'Audio clip not found' });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-app.put('/audioclips/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const updatedClip = req.body;
-    const result = await audioclipsCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedClip });
-    if (result.matchedCount === 1) {
-      res.status(200).send({ success: 'Audio clip updated successfully' });
-    } else {
-      res.status(404).send({ failure: 'Audio clip not found' });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-app.delete('/audioclips/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await audioclipsCollection.deleteOne({ _id: new ObjectId(id) });
-    if (result.deletedCount === 1) {
-      res.status(200).send({ success: 'Audio clip deleted successfully' });
-    } else {
-      res.status(404).send({ failure: 'Audio clip not found' });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
 // Endpoint to handle form submissions
 app.post("/form", async (req, res) => {
   try {
@@ -288,289 +211,120 @@ app.delete("/form/:id", async (req, res) => {
   }
 });
 
-// Endpoint to fetch all marketing entries
-app.get("/marketing", async (req, res) => {
-  try {
-    const result = await marketingCampaignsCollection.find({}).toArray();
-    res.status(200).send({ success: "Marketing entries fetched successfully", result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to fetch a single marketing entry by ID
-app.get("/marketing/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const marketing = await marketingCampaignsCollection.findOne({ _id: new ObjectId(id) });
-    if (marketing) {
-      res.status(200).send({ success: "Marketing entry fetched successfully", result: marketing });
-    } else {
-      res.status(404).send({ failure: "Marketing entry not found" });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to add a new marketing entry
-app.post("/marketing", async (req, res) => {
-  try {
-    const newMarketing = req.body;
-    const result = await marketingCampaignsCollection.insertOne(newMarketing);
-    res.status(201).send({ success: "Marketing entry added successfully", result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to update an existing marketing entry by ID
-app.put("/marketing/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const updatedMarketing = req.body;
-    const result = await marketingCampaignsCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedMarketing });
-    if (result.matchedCount === 1) {
-      res.status(200).send({ success: "Marketing entry updated successfully" });
-    } else {
-      res.status(404).send({ failure: "Marketing entry not found" });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to delete a marketing entry by ID
-app.delete("/marketing/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await marketingCampaignsCollection.deleteOne({ _id: new ObjectId(id) });
-    if (result.deletedCount === 1) {
-      res.status(200).send({ success: "Marketing entry deleted successfully" });
-    } else {
-      res.status(404).send({ failure: "Marketing entry not found" });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to fetch all marketing data entries
-app.get("/marketingdata", async (req, res) => {
-  try {
-    const result = await marketingDataCollection.find({}).toArray();
-    res.status(200).send({ success: "Marketing data entries fetched successfully", result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to fetch a single marketing data entry by ID
-app.get("/marketingdata/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const marketingData = await marketingDataCollection.findOne({ _id: new ObjectId(id) });
-    if (marketingData) {
-      res.status(200).send({ success: "Marketing data entry fetched successfully", result: marketingData });
-    } else {
-      res.status(404).send({ failure: "Marketing data entry not found" });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to add a new marketing data entry
-app.post("/marketingdata", async (req, res) => {
-  try {
-    const newMarketingData = req.body;
-    const result = await marketingDataCollection.insertOne(newMarketingData);
-    res.status(201).send({ success: "Marketing data entry added successfully", result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to update an existing marketing data entry by ID
-app.put("/marketingdata/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const updatedMarketingData = req.body;
-    const result = await marketingDataCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedMarketingData });
-    if (result.matchedCount === 1) {
-      res.status(200).send({ success: "Marketing data entry updated successfully" });
-    } else {
-      res.status(404).send({ failure: "Marketing data entry not found" });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-// Endpoint to delete a marketing data entry by ID
-app.delete("/marketingdata/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await marketingDataCollection.deleteOne({ _id: new ObjectId(id) });
-    if (result.deletedCount === 1) {
-      res.status(200).send({ success: "Marketing data entry deleted successfully" });
-    } else {
-      res.status(404).send({ failure: "Marketing data entry not found" });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
 
 
-// Endpoint to fetch all groups
-app.get('/groups', async (req, res) => {
-  try {
-    const groups = await studentsgroupsCollection.find({}).toArray();
-    res.json({ result: groups });
-  } catch (error) {
-    console.error('Error fetching groups:', error);
-    res.status(500).json({ message: 'Error fetching groups', error });
-  }
-});
-
-// Endpoint to add a group
-app.post('/groups', async (req, res) => {
-  const { groupName, category } = req.body;
-
-  // Validate input
-  if (!groupName || !category) {
-    return res.status(400).json({ message: 'Group name and category are required' });
-  }
-
-  try {
-    const newGroup = {
-      groupName,
-      category,
-      totalUsers: 0
-    };
-    const result = await studentsgroupsCollection.insertOne(newGroup);
-    res.status(201).json(result.ops[0]); // Return the inserted document
-  } catch (error) {
-    console.error('Error adding group:', error);
-    res.status(500).json({ message: 'Error adding group', error: error.message });
-  }
-});
-
-// Endpoint to update a group by ID
-app.put('/groups/:id', async (req, res) => {
-  const { id } = req.params;
-  const { groupName, category } = req.body;
-
-  // Validate ID
+// Helper function to handle adding data to an array in an institute
+const addDataToArray = async (id, arrayName, newData) => {
   if (!ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid group ID' });
+    return { status: 400, result: { failure: 'Invalid ID format' } };
   }
 
-  // Validate input
-  if (!groupName || !category) {
-    return res.status(400).json({ message: 'Group name and category are required' });
+  const result = await instituteCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $push: { [arrayName]: newData } }
+  );
+
+  if (result.matchedCount === 1) {
+    return { status: 201, result: { success: `${arrayName} added successfully`, newData } };
+  } else {
+    return { status: 404, result: { failure: 'Institute not found' } };
   }
+};
+
+// Helper function to handle updating data in an array in an institute
+const updateDataInArray = async (id, arrayName, dataId, updatedData) => {
+  if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
+    return { status: 400, result: { failure: 'Invalid ID format' } };
+  }
+
+  const result = await instituteCollection.updateOne(
+    { _id: new ObjectId(id), [`${arrayName}._id`]: new ObjectId(dataId) },
+    { $set: { [`${arrayName}.$`]: updatedData } }
+  );
+
+  if (result.matchedCount === 1) {
+    return { status: 200, result: { success: `${arrayName} updated successfully` } };
+  } else {
+    return { status: 404, result: { failure: 'Institute or data not found' } };
+  }
+};
+
+// Helper function to handle deleting data from an array in an institute
+const deleteDataFromArray = async (id, arrayName, dataId) => {
+  if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
+    return { status: 400, result: { failure: 'Invalid ID format' } };
+  }
+
+  const result = await instituteCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $pull: { [arrayName]: { _id: new ObjectId(dataId) } } }
+  );
+
+  if (result.matchedCount === 1) {
+    return { status: 200, result: { success: `${arrayName} deleted successfully` } };
+  } else {
+    return { status: 404, result: { failure: 'Institute or data not found' } };
+  }
+};
+
+// POST endpoint to add data to arrays in an institute
+app.post('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
+  const { id, arrayName } = req.params;
+  const newData = req.body;
 
   try {
-    const result = await studentsgroupsCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { groupName, category } }
-    );
-    if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: 'Group not found' });
-    }
-    res.json({ success: 'Group updated successfully' });
+    const response = await addDataToArray(id, arrayName, newData);
+    res.status(response.status).send(response.result);
   } catch (error) {
-    console.error('Error updating group:', error);
-    res.status(500).json({ message: 'Error updating group', error: error.message });
+    console.error(`Error adding data to ${arrayName}:`, error.message);
+    res.status(500).send({ failure: 'Internal server error' });
   }
-});
+}));
 
-// Endpoint to delete a group by ID
-app.delete('/groups/:id', async (req, res) => {
-  const { id } = req.params;
-
-  // Validate ID
-  if (!ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid group ID' });
-  }
+// PUT endpoint to update data in arrays in an institute
+app.put('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
+  const { id, arrayName, dataId } = req.params;
+  const updatedData = req.body;
 
   try {
-    const result = await studentsgroupsCollection.deleteOne({ _id: new ObjectId(id) });
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: 'Group not found' });
-    }
-    res.json({ success: 'Group deleted successfully' });
+    const response = await updateDataInArray(id, arrayName, dataId, updatedData);
+    res.status(response.status).send(response.result);
   } catch (error) {
-    console.error('Error deleting group:', error);
-    res.status(500).json({ message: 'Error deleting group', error: error.message });
+    console.error(`Error updating data in ${arrayName}:`, error.message);
+    res.status(500).send({ failure: 'Internal server error' });
   }
-});
+}));
 
+// DELETE endpoint to delete data from arrays in an institute
+app.delete('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
+  const { id, arrayName, dataId } = req.params;
 
-app.get("/studentsdbgroupname", async (req, res) => {
   try {
-    const result = await studentsdbgroupnameCollection.find({}).toArray();
-    res.status(200).send({ success: "Students fetched successfully", result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+    const response = await deleteDataFromArray(id, arrayName, dataId);
+    res.status(response.status).send(response.result);
+  } catch (error) {
+    console.error(`Error deleting data from ${arrayName}:`, error.message);
+    res.status(500).send({ failure: 'Internal server error' });
   }
-});
+}));
 
-app.get("/studentsdbgroupname/:id", async (req, res) => {
-  const { id } = req.params;
+// GET endpoint to retrieve arrays (e.g., marketing, marketingdata) in an institute
+app.get('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
+  const { id, arrayName } = req.params;
+
   try {
-    const student = await studentsdbgroupnameCollection.findOne({ _id: new ObjectId(id) });
-    if (student) {
-      res.status(200).send({ success: "Student fetched successfully", result: student });
+    const institute = await instituteCollection.findOne({ _id: new ObjectId(id) }, { projection: { [arrayName]: 1 } });
+
+    if (institute) {
+      res.status(200).send(institute[arrayName] || []);
     } else {
-      res.status(404).send({ failure: "Student not found" });
+      res.status(404).send({ failure: 'Institute not found' });
     }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  } catch (error) {
+    console.error(`Error retrieving ${arrayName}:`, error.message);
+    res.status(500).send({ failure: 'Internal server error' });
   }
-});
-
-app.post("/studentsdbgroupname", async (req, res) => {
-  try {
-    const newStudent = req.body;
-    const result = await studentsdbgroupnameCollection.insertOne(newStudent);
-    res.status(201).send({ success: "Student added successfully", result });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-app.put("/studentsdbgroupname/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const updatedStudent = req.body;
-    const result = await studentsdbgroupnameCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedStudent });
-    if (result.matchedCount === 1) {
-      res.status(200).send({ success: "Student updated successfully" });
-    } else {
-      res.status(404).send({ failure: "Student not found" });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
-app.delete("/studentsdbgroupname/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await studentsdbgroupnameCollection.deleteOne({ _id: new ObjectId(id) });
-    if (result.deletedCount === 1) {
-      res.status(200).send({ success: "Student deleted successfully" });
-    } else {
-      res.status(404).send({ failure: "Student not found" });
-    }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
-  }
-});
-
+}));
 
 
 const PORT = process.env.PORT || 3001;
