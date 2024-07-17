@@ -96,9 +96,11 @@ app.get('/institutes', async (req, res) => {
     const result = await instituteCollection.find({}).toArray();
     res.status(200).send({ success: 'Institutes fetched successfully', result });
   } catch (err) {
+    console.error(`Error fetching institutes: ${err.message}`);
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
+
 
 // Endpoint to fetch a single institute by ID
 app.get('/institutes/:id', async (req, res) => {
