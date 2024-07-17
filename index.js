@@ -12,7 +12,11 @@ app.use(cors());
 dotenv.config();
 
 const uri = process.env.mongo_uri;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  poolSize: 10, // Increase pool size for better concurrency
+});
 
 const dbname = "Institutelist";
 const instituteCollectionName = "Institutes";
