@@ -88,28 +88,27 @@ app.get("/", (req, res) => {
   res.send({ success: "Hello World" });
 });
 
-// Endpoint to fetch all institutes
-app.get("/institutes", async (req, res) => {
+app.get('/institutes', async (req, res) => {
   try {
     if (!instituteCollection) {
-      throw new Error("Institute collection is not initialized");
+      throw new Error('Institute collection is not initialized');
     }
     const result = await instituteCollection.find({}).toArray();
-    res.status(200).send({ success: "Institutes fetched successfully", result });
+    res.status(200).send({ success: 'Institutes fetched successfully', result });
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
 // Endpoint to fetch a single institute by ID
-app.get("/institutes/:id", async (req, res) => {
+app.get('/institutes/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const institute = await instituteCollection.findOne({ _id: new ObjectId(id) });
     if (institute) {
-      res.status(200).send({ success: "Institute fetched successfully", result: institute });
+      res.status(200).send({ success: 'Institute fetched successfully', result: institute });
     } else {
-      res.status(404).send({ failure: "Institute not found" });
+      res.status(404).send({ failure: 'Institute not found' });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
@@ -117,25 +116,32 @@ app.get("/institutes/:id", async (req, res) => {
 });
 
 // Endpoint to add a new institute
-app.post("/institutes", async (req, res) => {
+app.post('/institutes', async (req, res) => {
   try {
     const newInstitute = req.body;
     const result = await instituteCollection.insertOne(newInstitute);
-    res.status(201).send({ success: "Institute added successfully", result });
+    res.status(201).send({ success: 'Institute added successfully', result });
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
 
-app.put("/institutes/:id", async (req, res) => {
+// Endpoint to update an institute by ID
+app.put('/institutes/:id', async (req, res) => {
   const { id } = req.params;
   try {
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({ failure: 'Invalid ID format' });
+    }
     const updatedInstitute = req.body;
-    const result = await instituteCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedInstitute });
+    const result = await instituteCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updatedInstitute }
+    );
     if (result.matchedCount === 1) {
-      res.status(200).send({ success: "Institute updated successfully" });
+      res.status(200).send({ success: 'Institute updated successfully' });
     } else {
-      res.status(404).send({ failure: "Institute not found" });
+      res.status(404).send({ failure: 'Institute not found' });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
@@ -143,20 +149,22 @@ app.put("/institutes/:id", async (req, res) => {
 });
 
 // Endpoint to delete an institute by ID
-app.delete("/institutes/:id", async (req, res) => {
+app.delete('/institutes/:id', async (req, res) => {
   const { id } = req.params;
   try {
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({ failure: 'Invalid ID format' });
+    }
     const result = await instituteCollection.deleteOne({ _id: new ObjectId(id) });
     if (result.deletedCount === 1) {
-      res.status(200).send({ success: "Institute deleted successfully" });
+      res.status(200).send({ success: 'Institute deleted successfully' });
     } else {
-      res.status(404).send({ failure: "Institute not found" });
+      res.status(404).send({ failure: 'Institute not found' });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
-
 
 
 app.get('/audioclips', async (req, res) => {
