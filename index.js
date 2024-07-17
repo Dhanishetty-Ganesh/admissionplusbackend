@@ -88,10 +88,18 @@ app.get("/", (req, res) => {
   res.send({ success: "Hello World" });
 });
 
-app.get('/institutes', asyncHandler(async (req, res) => {
-  const result = await collections.institutes.find({}).toArray();
-  res.status(200).send({ success: 'Institutes fetched successfully', result });
-}));
+app.get('/institutes', async (req, res) => {
+  try {
+    if (!instituteCollection) {
+      throw new Error('Institute collection is not initialized');
+    }
+    const result = await instituteCollection.find({}).toArray();
+    res.status(200).send({ success: 'Institutes fetched successfully', result });
+  } catch (err) {
+    console.error(`Error fetching institutes: ${err.message}`);
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
 
 
 // Endpoint to fetch a single institute by ID
