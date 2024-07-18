@@ -213,7 +213,8 @@ app.delete("/form/:id", async (req, res) => {
 
 
 
-// Helper function to handle adding data to an array in an institute
+// Helper functions for managing arrays within an institute
+
 const addDataToArray = async (id, arrayName, newData) => {
   if (!ObjectId.isValid(id)) {
     return { status: 400, result: { failure: 'Invalid ID format' } };
@@ -231,7 +232,6 @@ const addDataToArray = async (id, arrayName, newData) => {
   }
 };
 
-// Helper function to handle updating data in an array in an institute
 const updateDataInArray = async (id, arrayName, dataId, updatedData) => {
   if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
     return { status: 400, result: { failure: 'Invalid ID format' } };
@@ -249,7 +249,6 @@ const updateDataInArray = async (id, arrayName, dataId, updatedData) => {
   }
 };
 
-// Helper function to handle deleting data from an array in an institute
 const deleteDataFromArray = async (id, arrayName, dataId) => {
   if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
     return { status: 400, result: { failure: 'Invalid ID format' } };
@@ -267,65 +266,31 @@ const deleteDataFromArray = async (id, arrayName, dataId) => {
   }
 };
 
-// POST endpoint to add data to arrays in an institute
+// POST add data to array in an institute
 app.post('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
   const { id, arrayName } = req.params;
   const newData = req.body;
 
-  try {
-    const response = await addDataToArray(id, arrayName, newData);
-    res.status(response.status).send(response.result);
-  } catch (error) {
-    console.error(`Error adding data to ${arrayName}:`, error.message);
-    res.status(500).send({ failure: 'Internal server error' });
-  }
+  const response = await addDataToArray(id, arrayName, newData);
+  res.status(response.status).send(response.result);
 }));
 
-// PUT endpoint to update data in arrays in an institute
+// PUT update data in array in an institute
 app.put('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
   const { id, arrayName, dataId } = req.params;
   const updatedData = req.body;
 
-  try {
-    const response = await updateDataInArray(id, arrayName, dataId, updatedData);
-    res.status(response.status).send(response.result);
-  } catch (error) {
-    console.error(`Error updating data in ${arrayName}:`, error.message);
-    res.status(500).send({ failure: 'Internal server error' });
-  }
+  const response = await updateDataInArray(id, arrayName, dataId, updatedData);
+  res.status(response.status).send(response.result);
 }));
 
-// DELETE endpoint to delete data from arrays in an institute
+// DELETE data from array in an institute
 app.delete('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
   const { id, arrayName, dataId } = req.params;
 
-  try {
-    const response = await deleteDataFromArray(id, arrayName, dataId);
-    res.status(response.status).send(response.result);
-  } catch (error) {
-    console.error(`Error deleting data from ${arrayName}:`, error.message);
-    res.status(500).send({ failure: 'Internal server error' });
-  }
+  const response = await deleteDataFromArray(id, arrayName, dataId);
+  res.status(response.status).send(response.result);
 }));
-
-// GET endpoint to retrieve arrays (e.g., marketing, marketingdata) in an institute
-app.get('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
-  const { id, arrayName } = req.params;
-
-  try {
-    const institute = await instituteCollection.findOne({ _id: new ObjectId(id) }, { projection: { [arrayName]: 1 } });
-
-    if (institute) {
-      res.status(200).send(institute[arrayName] || []);
-    } else {
-      res.status(404).send({ failure: 'Institute not found' });
-    }
-  } catch (error) {
-    console.error(`Error retrieving ${arrayName}:`, error.message);
-    res.status(500).send({ failure: 'Internal server error' });
-  }
-}));
-
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
