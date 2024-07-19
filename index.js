@@ -306,17 +306,14 @@ app.put('/institutes/:id/:arrayName/:dataId', async (req, res) => {
 
 app.delete('/institutes/:id/:arrayName/:dataId', async (req, res) => {
   const { id, arrayName, dataId } = req.params;
-
   try {
     if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
       return res.status(400).send({ failure: 'Invalid ID format' });
     }
-
     const result = await instituteCollection.updateOne(
       { _id: new ObjectId(id) },
       { $pull: { [arrayName]: { _id: new ObjectId(dataId) } } }
     );
-
     if (result.matchedCount === 1) {
       res.status(200).send({ success: `${arrayName} deleted successfully` });
     } else {
