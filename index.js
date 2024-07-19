@@ -306,15 +306,20 @@ app.put('/institutes/:id/:arrayName/:itemId', async (req, res) => {
 
 
 // Example Express.js route for deleting a marketing campaign
-app.delete('/institutes/:id/marketing/:itemId', async (req, res) => {
-  const { id, itemId } = req.params;
+app.delete('/institutes/:id/marketing/:marketingid', async (req, res) => {
+  const { id, marketingid } = req.params;
+  console.log(id);
+  console.log(marketingid);
+
   try {
-    if (!itemId) {
-      return res.status(400).json({ message: 'Item ID is required' });
+    if (!marketingid) {
+      return res.status(400).json({ message: 'Marketing ID is required' });
     }
-    const result = await Institute.updateOne(
-      { _id: id },
-      { $pull: { marketing: { itemId: itemId } } }
+    // const res2 = await instituteCollection.find({_id:new ObjectId(id)}).toArray();
+    // console.log(res2);
+    const result = await instituteCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $pull: { marketing: { itemId : marketingid } } }
     );
 
     if (result.modifiedCount === 0) {
@@ -327,6 +332,7 @@ app.delete('/institutes/:id/marketing/:itemId', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 
 // GET endpoint to retrieve arrays (e.g., marketing, marketingdata) in an institute
