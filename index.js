@@ -279,28 +279,53 @@ app.post('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
   }
 }));
 
-app.put('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
+app.put('/institutes/:id/:arrayName/:dataId', async (req, res) => {
   const { id, arrayName, dataId } = req.params;
   const updatedData = req.body;
-  try {
-    const response = await updateDataInArray(id, arrayName, dataId, updatedData);
-    res.status(response.status).send(response.result);
-  } catch (error) {
-    console.error(`Error updating data in ${arrayName}:`, error.message);
-    res.status(500).send({ failure: 'Internal server error' });
-  }
-}));
 
-app.delete('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
-  const { id, arrayName, dataId } = req.params;
   try {
-    const response = await deleteDataFromArray(id, arrayName, dataId);
-    res.status(response.status).send(response.result);
-  } catch (error) {
-    console.error(`Error deleting data from ${arrayName}:`, error.message);
-    res.status(500).send({ failure: 'Internal server error' });
+    if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
+      return res.status(400).send({ failure: 'Invalid ID format' });
+    }
+
+    const result = await instituteCollection.updateOne(
+      { _id: new ObjectId(id), [`${arrayName}._id`]: new ObjectId(dataId) },
+      { $set: { [`${arrayName}.$`]: updatedData } }
+    );
+
+    if (result.matchedCount === 1) {
+      res.status(200).send({ success: `${arrayName} updated successfully` });
+    } else {
+      res.status(404).send({ failure: 'Institute or data not found' });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
-}));
+});
+
+
+app.delete('/institutes/:id/:arrayName/:dataId', async (req, res) => {
+  const { id, arrayName, dataId } = req.params;
+
+  try {
+    if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
+      return res.status(400).send({ failure: 'Invalid ID format' });
+    }
+
+    const result = await instituteCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $pull: { [arrayName]: { _id: new ObjectId(dataId) } } }
+    );
+
+    if (result.matchedCount === 1) {
+      res.status(200).send({ success: `${arrayName} deleted successfully` });
+    } else {
+      res.status(404).send({ failure: 'Institute or data not found' });
+    }
+  } catch (err) {
+    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+  }
+});
 
 
 // GET endpoint to retrieve arrays (e.g., marketing, marketingdata) in an institute
