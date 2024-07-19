@@ -309,12 +309,9 @@ app.put('/institutes/:id/:arrayName/:itemId', async (req, res) => {
 app.delete('/institutes/:id/marketing/:itemId', async (req, res) => {
   const { id, itemId } = req.params;
   try {
-    // Validate itemId
     if (!itemId) {
       return res.status(400).json({ message: 'Item ID is required' });
     }
-
-    // Perform deletion
     const result = await Institute.updateOne(
       { _id: id },
       { $pull: { marketing: { itemId: itemId } } }
@@ -330,7 +327,6 @@ app.delete('/institutes/:id/marketing/:itemId', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
 
 
 // GET endpoint to retrieve arrays (e.g., marketing, marketingdata) in an institute
