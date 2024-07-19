@@ -279,24 +279,24 @@ app.post('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
   }
 }));
 
-app.put('/institutes/:id/marketing/:marketingid', async (req, res) => {
-  const { id, marketingid } = req.params;
+app.put('/institutes/:id/:arrayName/:itemId', async (req, res) => {
+  const { id, arrayName, itemId } = req.params;
   const updatedData = req.body;
 
   try {
     if (!ObjectId.isValid(id)) {
-      return res.status(400).send({ failure: 'Invalid ID format' });
+      return res.status(400).send({ failure: 'Invalid Institute ID format' });
     }
 
     const result = await instituteCollection.updateOne(
-      { _id: new ObjectId(id), 'marketing.marketingid': marketingid },
-      { $set: { 'marketing.$': updatedData } }
+      { _id: new ObjectId(id), [`${arrayName}.itemId`]: itemId },
+      { $set: { [`${arrayName}.$`]: updatedData } }
     );
 
     if (result.matchedCount === 1) {
-      res.status(200).send({ success: 'Marketing campaign updated successfully' });
+      res.status(200).send({ success: `${arrayName} updated successfully` });
     } else {
-      res.status(404).send({ failure: 'Institute or marketing campaign not found' });
+      res.status(404).send({ failure: 'Institute or item not found' });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
