@@ -305,26 +305,29 @@ app.put('/institutes/:id/:arrayName/:itemId', async (req, res) => {
 });
 
 
-app.delete('/institutes/:id/:arrayName/:itemId', async (req, res) => {
-  const { id, arrayName, itemId } = req.params;
-
+// Example Express.js route for deleting a marketing campaign
+app.delete('/institutes/:id/marketing/:itemId', async (req, res) => {
+  const { id, itemId } = req.params;
   try {
-    if (!ObjectId.isValid(id)) {
-      return res.status(400).send({ failure: 'Invalid Institute ID format' });
+    // Validate itemId
+    if (!itemId) {
+      return res.status(400).json({ message: 'Item ID is required' });
     }
 
-    const result = await instituteCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $pull: { [arrayName]: { itemId } } }
+    // Perform deletion
+    const result = await Institute.updateOne(
+      { _id: id },
+      { $pull: { marketing: { itemId: itemId } } }
     );
 
-    if (result.matchedCount === 1) {
-      res.status(200).send({ success: `${arrayName} deleted successfully` });
-    } else {
-      res.status(404).send({ failure: 'Institute or item not found' });
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: 'Item not found' });
     }
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+
+    res.status(200).json({ message: 'Item deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting marketing campaign:', error.message);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
