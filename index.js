@@ -279,24 +279,24 @@ app.post('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
   }
 }));
 
-app.put('/institutes/:id/:arrayName/:dataId', async (req, res) => {
-  const { id, arrayName, dataId } = req.params;
+app.put('/institutes/:id/:arrayName/:itemId', async (req, res) => {
+  const { id, arrayName, itemId } = req.params;
   const updatedData = req.body;
 
   try {
-    if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
-      return res.status(400).send({ failure: 'Invalid ID format' });
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({ failure: 'Invalid Institute ID format' });
     }
 
     const result = await instituteCollection.updateOne(
-      { _id: new ObjectId(id), [`${arrayName}._id`]: new ObjectId(dataId) },
+      { _id: new ObjectId(id), [`${arrayName}.itemId`]: itemId },
       { $set: { [`${arrayName}.$`]: updatedData } }
     );
 
     if (result.matchedCount === 1) {
       res.status(200).send({ success: `${arrayName} updated successfully` });
     } else {
-      res.status(404).send({ failure: 'Institute or data not found' });
+      res.status(404).send({ failure: 'Institute or item not found' });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
@@ -304,25 +304,29 @@ app.put('/institutes/:id/:arrayName/:dataId', async (req, res) => {
 });
 
 
-app.delete('/institutes/:id/:arrayName/:dataId', async (req, res) => {
-  const { id, arrayName, dataId } = req.params;
+app.delete('/institutes/:id/:arrayName/:itemId', async (req, res) => {
+  const { id, arrayName, itemId } = req.params;
+
   try {
-    if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
-      return res.status(400).send({ failure: 'Invalid ID format' });
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({ failure: 'Invalid Institute ID format' });
     }
+
     const result = await instituteCollection.updateOne(
       { _id: new ObjectId(id) },
-      { $pull: { [arrayName]: { _id: new ObjectId(dataId) } } }
+      { $pull: { [arrayName]: { itemId } } }
     );
+
     if (result.matchedCount === 1) {
       res.status(200).send({ success: `${arrayName} deleted successfully` });
     } else {
-      res.status(404).send({ failure: 'Institute or data not found' });
+      res.status(404).send({ failure: 'Institute or item not found' });
     }
   } catch (err) {
     res.status(500).send({ failure: `Error occurred: ${err.message}` });
   }
 });
+
 
 
 // GET endpoint to retrieve arrays (e.g., marketing, marketingdata) in an institute
