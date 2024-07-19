@@ -213,7 +213,7 @@ app.delete("/form/:id", async (req, res) => {
 
 
 
-// Helper function to handle adding data to an array in an institute
+// Helper functions for array operations in an institute
 const addDataToArray = async (id, arrayName, newData) => {
   if (!ObjectId.isValid(id)) {
     return { status: 400, result: { failure: 'Invalid ID format' } };
@@ -231,7 +231,6 @@ const addDataToArray = async (id, arrayName, newData) => {
   }
 };
 
-// Helper function to handle updating data in an array in an institute
 const updateDataInArray = async (id, arrayName, dataId, updatedData) => {
   if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
     return { status: 400, result: { failure: 'Invalid ID format' } };
@@ -249,7 +248,6 @@ const updateDataInArray = async (id, arrayName, dataId, updatedData) => {
   }
 };
 
-// Helper function to handle deleting data from an array in an institute
 const deleteDataFromArray = async (id, arrayName, dataId) => {
   if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
     return { status: 400, result: { failure: 'Invalid ID format' } };
@@ -267,11 +265,11 @@ const deleteDataFromArray = async (id, arrayName, dataId) => {
   }
 };
 
-// POST endpoint to add data to arrays in an institute
+
+// Endpoints for managing data in arrays within an institute
 app.post('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
   const { id, arrayName } = req.params;
   const newData = req.body;
-
   try {
     const response = await addDataToArray(id, arrayName, newData);
     res.status(response.status).send(response.result);
@@ -281,11 +279,9 @@ app.post('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
   }
 }));
 
-// PUT endpoint to update data in arrays in an institute
 app.put('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
   const { id, arrayName, dataId } = req.params;
   const updatedData = req.body;
-
   try {
     const response = await updateDataInArray(id, arrayName, dataId, updatedData);
     res.status(response.status).send(response.result);
@@ -295,10 +291,8 @@ app.put('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
   }
 }));
 
-// DELETE endpoint to delete data from arrays in an institute
 app.delete('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
   const { id, arrayName, dataId } = req.params;
-
   try {
     const response = await deleteDataFromArray(id, arrayName, dataId);
     res.status(response.status).send(response.result);
@@ -307,6 +301,7 @@ app.delete('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) =
     res.status(500).send({ failure: 'Internal server error' });
   }
 }));
+
 
 // GET endpoint to retrieve arrays (e.g., marketing, marketingdata) in an institute
 app.get('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
