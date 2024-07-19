@@ -212,11 +212,11 @@ app.delete("/form/:id", async (req, res) => {
 });
 
 
-// Helper functions for managing arrays within an institute
 
+// Helper function to handle adding data to an array in an institute
 const addDataToArray = async (id, arrayName, newData) => {
   if (!ObjectId.isValid(id)) {
-    return { status: 400, result: { failure: "Invalid ID format" } };
+    return { status: 400, result: { failure: 'Invalid ID format' } };
   }
 
   const result = await instituteCollection.updateOne(
@@ -227,13 +227,14 @@ const addDataToArray = async (id, arrayName, newData) => {
   if (result.matchedCount === 1) {
     return { status: 201, result: { success: `${arrayName} added successfully`, newData } };
   } else {
-    return { status: 404, result: { failure: "Institute not found" } };
+    return { status: 404, result: { failure: 'Institute not found' } };
   }
 };
 
+// Helper function to handle updating data in an array in an institute
 const updateDataInArray = async (id, arrayName, dataId, updatedData) => {
   if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
-    return { status: 400, result: { failure: "Invalid ID format" } };
+    return { status: 400, result: { failure: 'Invalid ID format' } };
   }
 
   const result = await instituteCollection.updateOne(
@@ -244,13 +245,14 @@ const updateDataInArray = async (id, arrayName, dataId, updatedData) => {
   if (result.matchedCount === 1) {
     return { status: 200, result: { success: `${arrayName} updated successfully` } };
   } else {
-    return { status: 404, result: { failure: "Institute or data not found" } };
+    return { status: 404, result: { failure: 'Institute or data not found' } };
   }
 };
 
+// Helper function to handle deleting data from an array in an institute
 const deleteDataFromArray = async (id, arrayName, dataId) => {
   if (!ObjectId.isValid(id) || !ObjectId.isValid(dataId)) {
-    return { status: 400, result: { failure: "Invalid ID format" } };
+    return { status: 400, result: { failure: 'Invalid ID format' } };
   }
 
   const result = await instituteCollection.updateOne(
@@ -261,49 +263,69 @@ const deleteDataFromArray = async (id, arrayName, dataId) => {
   if (result.matchedCount === 1) {
     return { status: 200, result: { success: `${arrayName} deleted successfully` } };
   } else {
-    return { status: 404, result: { failure: "Institute or data not found" } };
+    return { status: 404, result: { failure: 'Institute or data not found' } };
   }
 };
 
-// Route to add data to an array within an institute
-app.post("/institutes/:id/:arrayName", asyncHandler(async (req, res) => {
+// POST endpoint to add data to arrays in an institute
+app.post('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
   const { id, arrayName } = req.params;
-  const newData = { ...req.body, _id: new ObjectId() };
-  const { status, result } = await addDataToArray(id, arrayName, newData);
-  res.status(status).send(result);
-}));
+  const newData = req.body;
 
-// Route to update data within an array in an institute
-app.put("/institutes/:id/:arrayName/:dataId", asyncHandler(async (req, res) => {
-  const { id, arrayName, dataId } = req.params;
-  const updatedData = req.body;
-  const { status, result } = await updateDataInArray(id, arrayName, dataId, updatedData);
-  res.status(status).send(result);
-}));
-
-// Route to delete data from an array within an institute
-app.delete("/institutes/:id/:arrayName/:dataId", asyncHandler(async (req, res) => {
-  const { id, arrayName, dataId } = req.params;
-  const { status, result } = await deleteDataFromArray(id, arrayName, dataId);
-  res.status(status).send(result);
-}));
-
-// Route to fetch all data from an array within an institute
-app.get("/institutes/:id/:arrayName", asyncHandler(async (req, res) => {
-  const { id, arrayName } = req.params;
   try {
-    const institute = await instituteCollection.findOne({ _id: new ObjectId(id) });
-    if (!institute) {
-      return res.status(404).send({ failure: "Institute not found" });
-    }
-    if (!institute[arrayName]) {
-      return res.status(404).send({ failure: `${arrayName} not found` });
-    }
-    res.status(200).send({ success: `${arrayName} fetched successfully`, result: institute[arrayName] });
-  } catch (err) {
-    res.status(500).send({ failure: `Error occurred: ${err.message}` });
+    const response = await addDataToArray(id, arrayName, newData);
+    res.status(response.status).send(response.result);
+  } catch (error) {
+    console.error(`Error adding data to ${arrayName}:`, error.message);
+    res.status(500).send({ failure: 'Internal server error' });
   }
 }));
+
+// PUT endpoint to update data in arrays in an institute
+app.put('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
+  const { id, arrayName, dataId } = req.params;
+  const updatedData = req.body;
+
+  try {
+    const response = await updateDataInArray(id, arrayName, dataId, updatedData);
+    res.status(response.status).send(response.result);
+  } catch (error) {
+    console.error(`Error updating data in ${arrayName}:`, error.message);
+    res.status(500).send({ failure: 'Internal server error' });
+  }
+}));
+
+// DELETE endpoint to delete data from arrays in an institute
+app.delete('/institutes/:id/:arrayName/:dataId', asyncHandler(async (req, res) => {
+  const { id, arrayName, dataId } = req.params;
+
+  try {
+    const response = await deleteDataFromArray(id, arrayName, dataId);
+    res.status(response.status).send(response.result);
+  } catch (error) {
+    console.error(`Error deleting data from ${arrayName}:`, error.message);
+    res.status(500).send({ failure: 'Internal server error' });
+  }
+}));
+
+// GET endpoint to retrieve arrays (e.g., marketing, marketingdata) in an institute
+app.get('/institutes/:id/:arrayName', asyncHandler(async (req, res) => {
+  const { id, arrayName } = req.params;
+
+  try {
+    const institute = await instituteCollection.findOne({ _id: new ObjectId(id) }, { projection: { [arrayName]: 1 } });
+
+    if (institute) {
+      res.status(200).send(institute[arrayName] || []);
+    } else {
+      res.status(404).send({ failure: 'Institute not found' });
+    }
+  } catch (error) {
+    console.error(`Error retrieving ${arrayName}:`, error.message);
+    res.status(500).send({ failure: 'Internal server error' });
+  }
+}));
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
